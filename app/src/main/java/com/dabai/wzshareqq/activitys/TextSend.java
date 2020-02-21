@@ -13,37 +13,36 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.dabai.wzshareqq.MainActivity;
 
 public class TextSend extends AppCompatActivity {
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
 
-
         try {
-            if (intent.getClipData().getItemAt(0).getText() == null) {
-                Toast.makeText(this, "没有获取到数据，无法生成二维码", Toast.LENGTH_SHORT).show();
-                gohome();
-                finish();
+
+            if (intent == null)
                 return;
+            Bundle extras = intent.getExtras();
+
+            if (extras == null)
+                return;
+
+            switch (intent.getType()) {
+                case "text/plain"://分享的内容类型，如果png图片：image/png
+                    ToRes(extras.get(Intent.EXTRA_TEXT) + "");
+                    break;
+                default:
+                    break;
             }
-        } catch (Exception e) {
-            finish();
-            return;
-        }
-
-
-        try {
-            String link = "" + intent.getClipData().getItemAt(0).getText();
-            ToRes(link);
 
         } catch (Exception e) {
-            Toast.makeText(this, "没有获取到数据，无法生成二维码", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "异常:"+e, Toast.LENGTH_SHORT).show();
             gohome();
             finish();
             return;
         }
+
 
     }
 
