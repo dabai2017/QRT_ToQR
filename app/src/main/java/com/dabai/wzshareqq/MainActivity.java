@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -49,8 +50,10 @@ public class MainActivity extends AppCompatActivity {
 
     Switch sw1;
 
-
     String telink;
+
+    String headstr = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,13 +98,28 @@ public class MainActivity extends AppCompatActivity {
                     te1.setText(link);
 
                     Bitmap bit = createQRCodeBitmap(link, 700, 700, "UTF-8", "H", "1", R.color.colorAccent, Color.WHITE);
+
+                    if (bit == null) {
+                        Toast.makeText(MainActivity.this, "生成失败:最多可容纳1850个大写字母或2710个数字或1108个字节，或500多个汉字!", Toast.LENGTH_LONG).show();
+                        //gohome();
+                        return;
+                    }
+
                     img1.setImageBitmap(bit);
+
 
                 } else {
                     link = telink;
                     te1.setText(link);
 
                     Bitmap bit = createQRCodeBitmap(link, 700, 700, "UTF-8", "H", "1", R.color.colorAccent, Color.WHITE);
+
+                    if (bit == null) {
+                        Toast.makeText(MainActivity.this, "生成失败:最多可容纳1850个大写字母或2710个数字或1108个字节，或500多个汉字!", Toast.LENGTH_LONG).show();
+                        //gohome();
+                        return;
+                    }
+
                     img1.setImageBitmap(bit);
                 }
             }
@@ -112,11 +130,66 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = getIntent();
 
             String getdata = "" + intent.getData();
-            telink = getdata;
 
-            if (!getdata.contains("546L6ICF6I2j6ICA")) {
+            //Log.d("dabaizzz", getdata);
+
+            if (getdata.startsWith("mqqapi://share/to_fri")){
+                if (!(getdata.contains("546L6ICF6I2j6ICA") || getdata.contains("UVHpn7PkuZA="))){
+                    //如果不是 认证的链接，就退出警告
+                    Toast.makeText(this, "未经许可的APP请通过系统分享转二维码", Toast.LENGTH_LONG).show();
+                    finish();
+                    return;
+                }
+            }
+
+            if (getdata.contains("546L6ICF6I2j6ICA")) {
+                //王者荣耀 QQ分享
+                headstr = "来自" + Build.MODEL + "分享的王者荣耀链接:\n";
+
+                String base64_link = getdata.substring(getdata.indexOf("&url") + 5, getdata.indexOf("&app_name"));
+                Base64 base64 = new Base64();
+                link = base64.decode(base64_link);
+                telink = link;
+
+                Bitmap bit = createQRCodeBitmap(link, 700, 700, "UTF-8", "H", "1", R.color.colorAccent, Color.WHITE);
+
+                if (bit == null) {
+                    Toast.makeText(MainActivity.this, "生成失败:最多可容纳1850个大写字母或2710个数字或1108个字节，或500多个汉字!", Toast.LENGTH_LONG).show();
+                    //gohome();
+                    return;
+                }
+
+                img1.setImageBitmap(bit);
+                te1.setText(link);
+
+                tip1.setText("扫码进入王者荣耀房间");
+
+            } else if (getdata.contains("UVHpn7PkuZA=")) {
+                //QQ音乐 QQ分享
+                headstr = "来自" + Build.MODEL + "分享的QQ音乐链接:\n";
+
+                String base64_link = getdata.substring(getdata.indexOf("&url") + 5, getdata.indexOf("&app_name"));
+                Base64 base64 = new Base64();
+                link = base64.decode(base64_link);
+                telink = link;
+
+                Bitmap bit = createQRCodeBitmap(link, 700, 700, "UTF-8", "H", "1", R.color.colorAccent, Color.WHITE);
+
+                if (bit == null) {
+                    Toast.makeText(MainActivity.this, "生成失败:最多可容纳1850个大写字母或2710个数字或1108个字节，或500多个汉字!", Toast.LENGTH_LONG).show();
+                    //gohome();
+                    return;
+                }
+
+                img1.setImageBitmap(bit);
+                te1.setText(link);
+
+                tip1.setText("扫码进入QQ音乐网站");
+
+            } else {
 
                 link = getdata;
+                telink = link;
                 Bitmap bit = createQRCodeBitmap(link, 700, 700, "UTF-8", "H", "1", R.color.colorAccent, Color.WHITE);
 
                 if (bit == null) {
@@ -130,24 +203,10 @@ public class MainActivity extends AppCompatActivity {
 
                 tip1.setText("扫码识别文本或链接");
 
-
-            } else {
-                String base64_link = getdata.substring(getdata.indexOf("&url") + 5, getdata.indexOf("&app_name"));
-                Base64 base64 = new Base64();
-                link = base64.decode(base64_link);
-
-                Bitmap bit = createQRCodeBitmap(link, 700, 700, "UTF-8", "H", "1", R.color.colorAccent, Color.WHITE);
-
-                img1.setImageBitmap(bit);
-                te1.setText(link);
-
-                tip1.setText("扫码进入王者荣耀房间");
-
             }
         } catch (Exception e) {
             Toast.makeText(this, "转二维码异常:\n" + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-
 
     }
 
@@ -321,12 +380,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-
     }
 
 
     public void share_link(View view) {
-        new DabaiUtils().sendText(this, "来自" + Build.MODEL + "分享的王者荣耀链接:\n" + link);
+            new DabaiUtils().sendText(this, headstr + link);
     }
 
 
@@ -361,6 +419,9 @@ public class MainActivity extends AppCompatActivity {
         bsd.setContentView(R.layout.img_sheet);
         ImageView iv4 = bsd.findViewById(R.id.imageView4);
 
+        TextView te4 = bsd.findViewById(R.id.te_seebig);
+        te4.setText(tip1.getText());
+
         WindowManager manager = this.getWindowManager();
         DisplayMetrics outMetrics = new DisplayMetrics();
         manager.getDefaultDisplay().getMetrics(outMetrics);
@@ -369,6 +430,7 @@ public class MainActivity extends AppCompatActivity {
         Bitmap bit = createQRCodeBitmap(link, width2, width2, "UTF-8", "H", "1", Color.BLACK, Color.WHITE);
         iv4.setImageBitmap(bit);
         bsd.show();
+
 
     }
 }

@@ -20,7 +20,9 @@
             android:layout_marginRight="14dp"
             android:gravity="center"
             android:text="查看大图"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:id="@+id/te_seebig"
+            />
 
         <ImageView
             android:layout_margin="10dp"
